@@ -42,7 +42,7 @@ variable "hostname" {
 
 variable "aws_ami_name_filter" {
   description = "Filter by name attribute to use to identify the most recent FreeBSD AMI"
-  default = "FreeBSD 11.2-STABLE-amd64-*"   # this will require updates as OPNsense evolves with new versions
+  default = "FreeBSD 12.1-RELEASE-amd64-*"   # this will require updates as OPNsense evolves with new versions
 }
 
 variable "aws_ami_virtualization_filter" {
@@ -51,13 +51,13 @@ variable "aws_ami_virtualization_filter" {
 }
 
 variable "aws_ami_owners_filter" {
-  description = "Filter by owners attribute to use to identify the most recent FreeBSD AMI"
-  default = "118940168514" # NB: 118940168514 = FreeBSD
+  description = "Filter by owners attribute to use to identify the most recent FreeBSD AMI, you need to suscribe to FreeBSD Marketplace (is free). https://aws.amazon.com/marketplace/pp/B07L6QV354"
+  default = "679593333241" # NB: 679593333241 = FreeBSD Official Account
 }
 
 variable "aws_instance_type" {
   description = "The instance type to use for the aws-instance used on this build."
-  default = "t2.medium"
+  default = "t3.medium"
 }
 
 variable "do_opnsense_install" {
