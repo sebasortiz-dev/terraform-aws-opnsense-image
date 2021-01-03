@@ -44,13 +44,13 @@ __freebsd_static_package_install()
 }
 
 # The release is named statically so explicit version numbers can be safely used - OPNsense may upgrade them later
-freebsd_package_base="https://pkg.freebsd.org/FreeBSD:11:`uname -m`/release_2/All"
+freebsd_package_base="https://pkg.freebsd.org/FreeBSD:12:`uname -m`/release_1/All"
 
-__freebsd_static_package_install "$freebsd_package_base/oniguruma-6.8.1.txz"
-__freebsd_static_package_install "$freebsd_package_base/jq-1.5_3.txz"
-__freebsd_static_package_install "$freebsd_package_base/libgpg-error-1.28.txz"
-__freebsd_static_package_install "$freebsd_package_base/libgcrypt-1.8.2.txz"
-__freebsd_static_package_install "$freebsd_package_base/libxslt-1.1.32.txz"
+__freebsd_static_package_install "$freebsd_package_base/oniguruma-6.9.3.txz"
+__freebsd_static_package_install "$freebsd_package_base/jq-1.6.txz"
+__freebsd_static_package_install "$freebsd_package_base/libgpg-error-1.36.txz"
+__freebsd_static_package_install "$freebsd_package_base/libgcrypt-1.8.5.txz"
+__freebsd_static_package_install "$freebsd_package_base/libxslt-1.1.33.txz"
 __freebsd_static_package_install "$freebsd_package_base/xmlstarlet-1.6.1.txz"
 
 exit 0
