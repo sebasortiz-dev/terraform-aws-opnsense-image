@@ -180,12 +180,12 @@ opnsense_syshook()
 
         # mac addresses - public interface
         if [ ! -z "$public_interface" ] && [ $(ifconfig | grep "^$public_interface" | wc -l | tr -d ' ') -gt 0 ]; then
-            public_interface_mac=$(ifconfig "$public_interface" | grep hwaddr | cut -d' ' -f2)
+            public_interface_mac=$(ifconfig "$public_interface" | grep ether | cut -d' ' -f2)
         fi
 
         # mac addresses - private interface
         if [ ! -z "$private_interface" ] && [ $(ifconfig | grep "^$private_interface" | wc -l | tr -d ' ') -gt 0 ]; then
-            private_interface_mac=$(ifconfig "$private_interface" | grep hwaddr | cut -d' ' -f2)
+            private_interface_mac=$(ifconfig "$private_interface" | grep ether | cut -d' ' -f2)
         fi
 
         # =====================================================================
@@ -216,7 +216,7 @@ opnsense_syshook()
         echo "OPNsense Syshook: acquiring instance configuration attributes"
 
         # root_sshkey_data - NB: must be base64 encoded
-        root_sshkey_data=$(cat "$aws_local_path/meta-data/public-keys/0/openssh-key" | b64encode -r - | tr -d '\n')
+        root_sshkey_data=$(cat "$aws_local_path/meta-data/public-keys/0/openssh-key" | cut -d' ' -f1,2 )
 
         # public_interface
         if [ ! -z $public_interface_mac ]; then
