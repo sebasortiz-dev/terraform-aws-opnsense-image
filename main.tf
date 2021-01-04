@@ -188,17 +188,16 @@ resource "aws_instance" "build-instance" {
 
   connection {
     type = "ssh"
-    user = "root"
-    timeout = "600"
+    user = "ec2-user"
+    timeout = "10m"
     agent = false
     private_key = "${tls_private_key.terraform-bootstrap-sshkey.private_key_pem}"
   }
 
   provisioner "remote-exec" {
     inline = [
-      # wait until the aws package is installed which is an indication the firstboot is close to being finished
-      "while [ $(which aws | wc -l | tr -d ' ') -lt 1 ]; do echo '===tail -n3 /var/log/messages==='; tail -n3 /var/log/messages; sleep 3; done",
-      "sleep 5"
+       #FreeBSD 12 installs the aws cli, before allowing connections.
+      "su -m root -c 'echo `which aws`'"
     ]
   }
 
@@ -244,15 +243,15 @@ resource "null_resource" "opnsense-install-action" {
   connection {
     host = "${aws_instance.build-instance.public_ip}"
     type = "ssh"
-    user = "root"
-    timeout = "600"
+    user = "ec2-user"
+    timeout = "20m"
     agent = false
     private_key = "${tls_private_key.terraform-bootstrap-sshkey.private_key_pem}"
   }
 
   provisioner "remote-exec" {
     inline = [
-      "echo -n '${base64gzip(data.template_file.opnsense-install-sh.rendered)}' | b64decode -r | gunzip | /bin/sh",
+      "echo -n '${base64gzip(data.template_file.opnsense-install-sh.rendered)}' | b64decode -r | gunzip | su -m root -c /bin/sh",
     ]
   }
 
@@ -267,20 +266,20 @@ resource "null_resource" "cleanup-shutdown-action" {
   connection {
     host = "${aws_instance.build-instance.public_ip}"
     type = "ssh"
-    user = "root"
-    timeout = "60"
+    user = "ec2-user"
+    timeout = "10m"
     agent = false
     private_key = "${tls_private_key.terraform-bootstrap-sshkey.private_key_pem}"
   }
 
   provisioner "remote-exec" {
     inline = [
-      "rm -f /etc/rc.conf",
-      "rm -Rf /usr/home/ec2-user",  # aws
-      "rm -Rf /usr/home/freebsd",   # digitalocean
-      "rm -Rf /var/log/*",
-      "rm -Rf /root/.ssh",
-      "shutdown -p +20s"
+      "su -m root -c 'rm -f /etc/rc.conf'",
+      "su -m root -c 'rm -Rf /usr/home/ec2-user'",  # aws
+      "su -m root -c 'rm -Rf /usr/home/freebsd'",   # digitalocean
+      "su -m root -c 'rm -Rf /var/log/*'",
+      "su -m root -c 'rm -Rf /root/.ssh'",
+      "su -m root -c 'shutdown -p +20s'"
     ]
   }
 
