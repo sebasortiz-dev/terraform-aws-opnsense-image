@@ -98,6 +98,7 @@ resource "aws_vpc" "opnsense-cloud-builder" {
 
 resource "aws_subnet" "opnsense-cloud-builder-subnet" {
   vpc_id     = "${aws_vpc.opnsense-cloud-builder.id}"
+  availability_zone = "us-east-1f"
   cidr_block = "192.168.42.0/28"
   map_public_ip_on_launch = true
 
@@ -185,6 +186,10 @@ resource "aws_instance" "build-instance" {
   source_dest_check = false
 
   user_data = "${data.template_file.instance-userdata.rendered}"
+
+  credit_specification {
+    cpu_credits = "unlimited"
+  }
 
   connection {
     type = "ssh"
@@ -274,6 +279,7 @@ resource "null_resource" "cleanup-shutdown-action" {
 
   provisioner "remote-exec" {
     inline = [
+      "sleep 3",
       "su -m root -c 'rm -f /etc/rc.conf'",
       "su -m root -c 'rm -Rf /usr/home/ec2-user'",  # aws
       "su -m root -c 'rm -Rf /usr/home/freebsd'",   # digitalocean
@@ -309,7 +315,7 @@ resource "null_resource" "instance-wait-poweroff" {
 # ===
 locals {
   build_id = "${random_string.build-id.result}"
-  image_name = "OPNsense ${var.opnsense_release} - ${replace(replace(replace(replace(timestamp(), ":", ""),"-",""),"Z",""),"T","Z")}"
+  image_name = "OPNsense ${var.opnsense_release} - ${replace(replace(replace(replace(timestamp(), ":", ""),"-",""),"Z",""),"T","Z")} - for Elastic Network Adapter (ENA) (t3 instances)"
   image_action_outfile = "/tmp/opnsense-${local.build_id}-image-action.json"
   image_action_idfile = "/tmp/opnsense-${local.build_id}-image-action.id"
 }
