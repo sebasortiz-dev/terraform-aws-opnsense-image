@@ -216,7 +216,7 @@ opnsense_syshook()
         echo "OPNsense Syshook: acquiring instance configuration attributes"
 
         # root_sshkey_data - NB: must be base64 encoded
-        root_sshkey_data=$(cat "$aws_local_path/meta-data/public-keys/0/openssh-key" | cut -d' ' -f1,2 )
+        root_sshkey_data=$(cat "$aws_local_path/meta-data/public-keys/0/openssh-key" | cut -d' ' -f1,2 | b64encode -r - | tr -d '\n')
 
         # public_interface
         if [ ! -z $public_interface_mac ]; then
@@ -254,169 +254,169 @@ opnsense_syshook()
         xpath="//system/user[contains(name,'root')]/authorizedkeys"
         opnsense_config_interface upsert "$xpath" "$root_sshkey_data"           || echo "OPNsense Syshook: failed to upsert $xpath"
 
-        # =====================================================================
+        # # =====================================================================
 
-        echo "OPNsense Syshook: applying Instance IP address configuration data to $CONFIG_FILE"
+        # echo "OPNsense Syshook: applying Instance IP address configuration data to $CONFIG_FILE"
 
-        # inject AWS provided nameservers if none are set
-        if [ -z $(opnsense_config_interface read "//system/dnsserver[1]") ]; then
+        # # inject AWS provided nameservers if none are set
+        # if [ -z $(opnsense_config_interface read "//system/dnsserver[1]") ]; then
 
-            xpath="//system/dnsserver"
-            opnsense_config_interface delete "$xpath"                           || echo "OPNsense Syshook: failed to delete $xpath"
+        #     xpath="//system/dnsserver"
+        #     opnsense_config_interface delete "$xpath"                           || echo "OPNsense Syshook: failed to delete $xpath"
 
-            xpath="//system/dnsserver"
-            opnsense_config_interface create "$xpath" "$public_ip4_nameserver1" || echo "OPNsense Syshook: failed to create $xpath[1]"
+        #     xpath="//system/dnsserver"
+        #     opnsense_config_interface create "$xpath" "$public_ip4_nameserver1" || echo "OPNsense Syshook: failed to create $xpath[1]"
 
-            xpath="//system/dnsserver"
-            opnsense_config_interface create "$xpath" "$public_ip4_nameserver2" || echo "OPNsense Syshook: failed to create $xpath[2]"
-        fi
+        #     xpath="//system/dnsserver"
+        #     opnsense_config_interface create "$xpath" "$public_ip4_nameserver2" || echo "OPNsense Syshook: failed to create $xpath[2]"
+        # fi
 
-        # public_ip4 address data if $public_ip4_addr is available
-        echo "OPNsense Syshook: IPv4 to $public_interface"
-        if [ ! -z "$public_ip4_addr" ] && [ "$public_ip4_addr" != "null" ]; then
+        # # public_ip4 address data if $public_ip4_addr is available
+        # echo "OPNsense Syshook: IPv4 to $public_interface"
+        # if [ ! -z "$public_ip4_addr" ] && [ "$public_ip4_addr" != "null" ]; then
 
-            echo "OPNsense Syshook: Applying IPv4 on $public_interface"
+        #     echo "OPNsense Syshook: Applying IPv4 on $public_interface"
 
-            xpath="//interfaces/public/ipaddr"
-            opnsense_config_interface upsert "$xpath" "$public_ip4_addr"        || echo "OPNsense Syshook: failed to upsert $xpath"
+        #     xpath="//interfaces/public/ipaddr"
+        #     opnsense_config_interface upsert "$xpath" "$public_ip4_addr"        || echo "OPNsense Syshook: failed to upsert $xpath"
 
-            xpath="//interfaces/public/subnet"
-            opnsense_config_interface upsert "$xpath" "$public_ip4_subnet"      || echo "OPNsense Syshook: failed to upsert $xpath"
+        #     xpath="//interfaces/public/subnet"
+        #     opnsense_config_interface upsert "$xpath" "$public_ip4_subnet"      || echo "OPNsense Syshook: failed to upsert $xpath"
 
-            xpath="//gateways/gateway_item[contains(name,'public4gw')]/gateway"
-            opnsense_config_interface upsert "$xpath" "$public_ip4_gateway"     || echo "OPNsense Syshook: failed to upsert $xpath"
+        #     xpath="//gateways/gateway_item[contains(name,'public4gw')]/gateway"
+        #     opnsense_config_interface upsert "$xpath" "$public_ip4_gateway"     || echo "OPNsense Syshook: failed to upsert $xpath"
 
-            xpath="//gateways/gateway_item[contains(name,'public4gw')]/disabled"
-            opnsense_config_interface delete "$xpath"                           || echo "OPNsense Syshook: failed to delete $xpath"
+        #     xpath="//gateways/gateway_item[contains(name,'public4gw')]/disabled"
+        #     opnsense_config_interface delete "$xpath"                           || echo "OPNsense Syshook: failed to delete $xpath"
 
-        else
+        # else
 
-            echo "OPNsense Syshook: Removing IPv4 on $public_interface"
+        #     echo "OPNsense Syshook: Removing IPv4 on $public_interface"
 
-            xpath="//interfaces/public/ipaddr"
-            opnsense_config_interface delete "$xpath"                           || echo "OPNsense Syshook: failed to delete $xpath"
+        #     xpath="//interfaces/public/ipaddr"
+        #     opnsense_config_interface delete "$xpath"                           || echo "OPNsense Syshook: failed to delete $xpath"
 
-            xpath="//interfaces/public/subnet"
-            opnsense_config_interface delete "$xpath"                           || echo "OPNsense Syshook: failed to delete $xpath"
+        #     xpath="//interfaces/public/subnet"
+        #     opnsense_config_interface delete "$xpath"                           || echo "OPNsense Syshook: failed to delete $xpath"
 
-            xpath="//gateways/gateway_item[contains(name,'public4gw')]/gateway"
-            opnsense_config_interface delete "$xpath"                           || echo "OPNsense Syshook: failed to delete $xpath"
+        #     xpath="//gateways/gateway_item[contains(name,'public4gw')]/gateway"
+        #     opnsense_config_interface delete "$xpath"                           || echo "OPNsense Syshook: failed to delete $xpath"
 
-            xpath="//gateways/gateway_item[contains(name,'public4gw')]/disabled"
-            opnsense_config_interface upsert "$xpath" "1"                       || echo "OPNsense Syshook: failed to upsert $xpath"
+        #     xpath="//gateways/gateway_item[contains(name,'public4gw')]/disabled"
+        #     opnsense_config_interface upsert "$xpath" "1"                       || echo "OPNsense Syshook: failed to upsert $xpath"
 
-        fi
+        # fi
 
-        # public_ip6 address data if $public_ip6_addr is available
-        echo "OPNsense Syshook: IPv6 to $public_interface"
-        if [ ! -z "$public_ip6_addr" ] && [ "$public_ip6_addr" != "null" ]; then
+        # # public_ip6 address data if $public_ip6_addr is available
+        # echo "OPNsense Syshook: IPv6 to $public_interface"
+        # if [ ! -z "$public_ip6_addr" ] && [ "$public_ip6_addr" != "null" ]; then
 
-            echo "OPNsense Syshook: Applying IPv6 on $public_interface"
+        #     echo "OPNsense Syshook: Applying IPv6 on $public_interface"
 
-            xpath="//interfaces/public/ipaddrv6"
-            opnsense_config_interface upsert "$xpath" "$public_ip6_addr"        || echo "OPNsense Syshook: failed to upsert $xpath"
+        #     xpath="//interfaces/public/ipaddrv6"
+        #     opnsense_config_interface upsert "$xpath" "$public_ip6_addr"        || echo "OPNsense Syshook: failed to upsert $xpath"
 
-            xpath="//interfaces/public/subnetv6"
-            opnsense_config_interface upsert "$xpath" "$public_ip6_subnet"      || echo "OPNsense Syshook: failed to upsert $xpath"
+        #     xpath="//interfaces/public/subnetv6"
+        #     opnsense_config_interface upsert "$xpath" "$public_ip6_subnet"      || echo "OPNsense Syshook: failed to upsert $xpath"
 
-            xpath="//gateways/gateway_item[contains(name,'public6gw')]/gateway"
-            opnsense_config_interface upsert "$xpath" "$public_ip6_gateway"     || echo "OPNsense Syshook: failed to upsert $xpath"
+        #     xpath="//gateways/gateway_item[contains(name,'public6gw')]/gateway"
+        #     opnsense_config_interface upsert "$xpath" "$public_ip6_gateway"     || echo "OPNsense Syshook: failed to upsert $xpath"
 
-            xpath="//gateways/gateway_item[contains(name,'public6gw')]/disabled"
-            opnsense_config_interface delete "$xpath"                           || echo "OPNsense Syshook: failed to delete $xpath"
+        #     xpath="//gateways/gateway_item[contains(name,'public6gw')]/disabled"
+        #     opnsense_config_interface delete "$xpath"                           || echo "OPNsense Syshook: failed to delete $xpath"
 
-        else
+        # else
 
-            echo "OPNsense Syshook: Removing IPv6 on $public_interface"
+        #     echo "OPNsense Syshook: Removing IPv6 on $public_interface"
 
-            xpath="//interfaces/public/ipaddrv6"
-            opnsense_config_interface delete "$xpath"                           || echo "OPNsense Syshook: failed to delete $xpath"
+        #     xpath="//interfaces/public/ipaddrv6"
+        #     opnsense_config_interface delete "$xpath"                           || echo "OPNsense Syshook: failed to delete $xpath"
 
-            xpath="//interfaces/public/subnetv6"
-            opnsense_config_interface delete "$xpath"                           || echo "OPNsense Syshook: failed to delete $xpath"
+        #     xpath="//interfaces/public/subnetv6"
+        #     opnsense_config_interface delete "$xpath"                           || echo "OPNsense Syshook: failed to delete $xpath"
 
-            xpath="//gateways/gateway_item[contains(name,'public6gw')]/gateway"
-            opnsense_config_interface delete "$xpath"                           || echo "OPNsense Syshook: failed to delete $xpath"
+        #     xpath="//gateways/gateway_item[contains(name,'public6gw')]/gateway"
+        #     opnsense_config_interface delete "$xpath"                           || echo "OPNsense Syshook: failed to delete $xpath"
 
-            xpath="//gateways/gateway_item[contains(name,'public6gw')]/disabled"
-            opnsense_config_interface upsert "$xpath" "1"                       || echo "OPNsense Syshook: failed to upsert $xpath"
+        #     xpath="//gateways/gateway_item[contains(name,'public6gw')]/disabled"
+        #     opnsense_config_interface upsert "$xpath" "1"                       || echo "OPNsense Syshook: failed to upsert $xpath"
 
-        fi
+        # fi
 
-        if [ -z "$public_interface_mac" ]; then
-            xpath="//interfaces/public/enable"
-            opnsense_config_interface delete "$xpath"                           || echo "OPNsense Syshook: failed to delete $xpath"
-        fi
+        # if [ -z "$public_interface_mac" ]; then
+        #     xpath="//interfaces/public/enable"
+        #     opnsense_config_interface delete "$xpath"                           || echo "OPNsense Syshook: failed to delete $xpath"
+        # fi
 
-        # private_ip4 address data if $private_ip4_addr is available
-        echo "OPNsense Syshook: IPv4 to $private_interface"
-        if [ ! -z "$private_ip4_addr" ] && [ "$private_ip4_addr" != "null" ]; then
+        # # private_ip4 address data if $private_ip4_addr is available
+        # echo "OPNsense Syshook: IPv4 to $private_interface"
+        # if [ ! -z "$private_ip4_addr" ] && [ "$private_ip4_addr" != "null" ]; then
 
-            echo "OPNsense Syshook: Applying IPv4 on $private_interface"
+        #     echo "OPNsense Syshook: Applying IPv4 on $private_interface"
 
-            xpath="//interfaces/private/ipaddr"
-            opnsense_config_interface upsert "$xpath" "$private_ip4_addr"       || echo "OPNsense Syshook: failed to upsert $xpath"
+        #     xpath="//interfaces/private/ipaddr"
+        #     opnsense_config_interface upsert "$xpath" "$private_ip4_addr"       || echo "OPNsense Syshook: failed to upsert $xpath"
 
-            xpath="//interfaces/private/subnet"
-            opnsense_config_interface upsert "$xpath" "$private_ip4_subnet"     || echo "OPNsense Syshook: failed to upsert $xpath"
+        #     xpath="//interfaces/private/subnet"
+        #     opnsense_config_interface upsert "$xpath" "$private_ip4_subnet"     || echo "OPNsense Syshook: failed to upsert $xpath"
 
-        else
+        # else
 
-            echo "OPNsense Syshook: Removing IPv4 on $private_interface"
+        #     echo "OPNsense Syshook: Removing IPv4 on $private_interface"
 
-            xpath="//interfaces/private/ipaddr"
-            opnsense_config_interface delete "$xpath"                           || echo "OPNsense Syshook: failed to delete $xpath"
+        #     xpath="//interfaces/private/ipaddr"
+        #     opnsense_config_interface delete "$xpath"                           || echo "OPNsense Syshook: failed to delete $xpath"
 
-            xpath="//interfaces/private/subnet"
-            opnsense_config_interface delete "$xpath"                           || echo "OPNsense Syshook: failed to delete $xpath"
+        #     xpath="//interfaces/private/subnet"
+        #     opnsense_config_interface delete "$xpath"                           || echo "OPNsense Syshook: failed to delete $xpath"
 
-        fi
+        # fi
 
-        # private_ip6 address data if $private_ip6_addr is available
-        echo "OPNsense Syshook: IPv6 to $private_interface"
-        if [ ! -z "$private_ip6_addr" ] && [ "$private_ip6_addr" != "null" ]; then
+        # # private_ip6 address data if $private_ip6_addr is available
+        # echo "OPNsense Syshook: IPv6 to $private_interface"
+        # if [ ! -z "$private_ip6_addr" ] && [ "$private_ip6_addr" != "null" ]; then
 
-            echo "OPNsense Syshook: Applying IPv6 on $private_interface"
+        #     echo "OPNsense Syshook: Applying IPv6 on $private_interface"
 
-            xpath="//interfaces/private/ipaddrv6"
-            opnsense_config_interface upsert "$xpath" "$private_ip6_addr"       || echo "OPNsense Syshook: failed to upsert $xpath"
+        #     xpath="//interfaces/private/ipaddrv6"
+        #     opnsense_config_interface upsert "$xpath" "$private_ip6_addr"       || echo "OPNsense Syshook: failed to upsert $xpath"
 
-            xpath="//interfaces/private/subnetv6"
-            opnsense_config_interface upsert "$xpath" "$private_ip6_subnet"     || echo "OPNsense Syshook: failed to upsert $xpath"
+        #     xpath="//interfaces/private/subnetv6"
+        #     opnsense_config_interface upsert "$xpath" "$private_ip6_subnet"     || echo "OPNsense Syshook: failed to upsert $xpath"
 
-        else
+        # else
 
-            echo "OPNsense Syshook: Removing IPv6 on $private_interface"
+        #     echo "OPNsense Syshook: Removing IPv6 on $private_interface"
 
-            xpath="//interfaces/private/ipaddrv6"
-            opnsense_config_interface delete "$xpath"                           || echo "OPNsense Syshook: failed to delete $xpath"
+        #     xpath="//interfaces/private/ipaddrv6"
+        #     opnsense_config_interface delete "$xpath"                           || echo "OPNsense Syshook: failed to delete $xpath"
 
-            xpath="//interfaces/private/subnetv6"
-            opnsense_config_interface delete "$xpath"                           || echo "OPNsense Syshook: failed to delete $xpath"
+        #     xpath="//interfaces/private/subnetv6"
+        #     opnsense_config_interface delete "$xpath"                           || echo "OPNsense Syshook: failed to delete $xpath"
 
-        fi
+        # fi
 
-        if [ -z "$private_interface_mac" ]; then
-            xpath="//interfaces/private/enable"
-            opnsense_config_interface delete "$xpath"                           || echo "OPNsense Syshook: failed to delete $xpath"
-        fi
+        # if [ -z "$private_interface_mac" ]; then
+        #     xpath="//interfaces/private/enable"
+        #     opnsense_config_interface delete "$xpath"                           || echo "OPNsense Syshook: failed to delete $xpath"
+        # fi
 
-        # =====================================================================
+        # # =====================================================================
 
-        echo "OPNsense Syshook: reloading full configuration"
-        /usr/local/etc/rc.reload_all
+        # echo "OPNsense Syshook: reloading full configuration"
+        # /usr/local/etc/rc.reload_all
 
-        if [ ! -z "$public_interface_mac" ]; then
-            /usr/local/opnsense/service/configd_ctl.py interface newip "$public_interface"
-            /usr/local/opnsense/service/configd_ctl.py interface newipv6 "$public_interface"
-        fi
+        # if [ ! -z "$public_interface_mac" ]; then
+        #     /usr/local/opnsense/service/configd_ctl.py interface newip "$public_interface"
+        #     /usr/local/opnsense/service/configd_ctl.py interface newipv6 "$public_interface"
+        # fi
 
-        if [ ! -z "$private_interface_mac" ]; then
-            /usr/local/opnsense/service/configd_ctl.py interface newip "$private_interface"
-            /usr/local/opnsense/service/configd_ctl.py interface newipv6 "$private_interface"
-        fi
+        # if [ ! -z "$private_interface_mac" ]; then
+        #     /usr/local/opnsense/service/configd_ctl.py interface newip "$private_interface"
+        #     /usr/local/opnsense/service/configd_ctl.py interface newipv6 "$private_interface"
+        # fi
 
-        # =====================================================================
+        # # =====================================================================
 
         echo "OPNsense Syshook: finished instance configuration"
 }
