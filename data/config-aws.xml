@@ -261,7 +261,7 @@
   <interfaces>
 
     <public>
-      <if>xn0</if>
+      <if>ena0</if>
       <descr>public</descr>
       <enable>1</enable>
       <lock>1</lock>
@@ -278,7 +278,7 @@
       <mediaopt/>
     </public>
     <private>
-      <if>xn1</if>
+      <if>ena1</if>
       <descr>private</descr>
       <enable>1</enable>
       <lock>1</lock>
